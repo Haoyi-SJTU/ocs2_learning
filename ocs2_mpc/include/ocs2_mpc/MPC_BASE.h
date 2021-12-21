@@ -36,86 +36,88 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ocs2_mpc/MPC_Settings.h"
 
-namespace ocs2 {
+namespace ocs2
+{
 
-/**
+  /**
  * This class is an interface class for the MPC method.
  */
-class MPC_BASE {
- public:
-  /**
+  class MPC_BASE
+  {
+  public:
+    /**
    * Constructor
    *
    * @param [in] mpcSettings: Structure containing the settings for the MPC algorithm.
    */
-  explicit MPC_BASE(mpc::Settings mpcSettings);
+    explicit MPC_BASE(mpc::Settings mpcSettings);
 
-  /** Destructor. */
-  virtual ~MPC_BASE() = default;
+    /** Destructor. */
+    virtual ~MPC_BASE() = default;
 
-  /**
+    /**
    * Resets the class to its state after construction.
    * @note reset() must not be called while the solver is running.
    */
-  virtual void reset();
+    virtual void reset();
 
-  /**
+    /**
    * The main routine of MPC which runs MPC for the given state and time.
    *
    * @param [in] currentTime: The given time.
    * @param [in] currentState: The given state.
    */
-  virtual bool run(scalar_t currentTime, const vector_t& currentState);
+    virtual bool run(scalar_t currentTime, const vector_t &currentState);
 
-  /** Gets a pointer to the underlying solver used in the MPC. */
-  virtual SolverBase* getSolverPtr() = 0;
+    /** Gets a pointer to the underlying solver used in the MPC. */
+    virtual SolverBase *getSolverPtr() = 0;
 
-  /** Gets a const pointer to the underlying solver used in the MPC. */
-  virtual const SolverBase* getSolverPtr() const = 0;
+    /** Gets a const pointer to the underlying solver used in the MPC. */
+    virtual const SolverBase *getSolverPtr() const = 0;
 
-  /** Returns the time horizon for which the optimizer is called. */
-  scalar_t getTimeHorizon() const { return mpcSettings_.timeHorizon_; }
+    /** Returns the time horizon for which the optimizer is called. */
+    scalar_t getTimeHorizon() const { return mpcSettings_.timeHorizon_; }
 
-  /** Sets the new time horizon, which will be updated at the next MPC rewind. */
-  void setTimeHorizon(scalar_t timeHorizon) { nextTimeHorizon_ = timeHorizon; }
+    /** Sets the new time horizon, which will be updated at the next MPC rewind. */
+    void setTimeHorizon(scalar_t timeHorizon) { nextTimeHorizon_ = timeHorizon; }
 
-  /** Gets the MPC settings. */
-  const mpc::Settings& settings() const { return mpcSettings_; }
+    /** Gets the MPC settings. */
+    const mpc::Settings &settings() const { return mpcSettings_; }
 
- protected:
-  /**
+  protected:
+    /**
    * Solves the optimal control problem for the given state and time period ([initTime,finalTime]).
    *
    * @param [out] initTime: Initial time. This value can be adjusted by the optimizer.
    * @param [in] initState: Initial state.
    * @param [in] finalTime: Final time. This value can be adjusted by the optimizer.
    */
-  virtual void calculateController(scalar_t initTime, const vector_t& initState, scalar_t finalTime) = 0;
+    virtual void calculateController(scalar_t initTime, const vector_t &initState, scalar_t finalTime) = 0;
 
- private:
-  /** Rewinds MPC */
-  void rewind();
+  private:
+    /** Rewinds MPC */
+    void rewind();
 
-  static scalar_array_t initializePartitionTimes(scalar_t timeHorizon, size_t numPartitions);
+    static scalar_array_t initializePartitionTimes(scalar_t timeHorizon, size_t numPartitions);
 
-  /**
+    /**
    * Adjust time horizon.
    *
    * @param [in] partitionTimes: Partitioning times after rewind.
    * @param [in, out] initTime: Adjustments initial time.
    * @param [in, out] finalTime: Adjustments final time.
    */
-  static void adjustTimeHorizon(const scalar_array_t& partitionTimes, scalar_t& initTime, scalar_t& finalTime);
+    static void adjustTimeHorizon(const scalar_array_t &partitionTimes, scalar_t &initTime, scalar_t &finalTime);
 
- protected:
-  bool initRun_ = true;
-  scalar_array_t partitionTimes_{};
+  protected:
+    bool initRun_ = true;
+    scalar_array_t partitionTimes_{};
 
- private:
-  mpc::Settings mpcSettings_;
-  scalar_t nextTimeHorizon_;
+  private:
+    mpc::Settings mpcSettings_;
+    scalar_t nextTimeHorizon_;
 
-  benchmark::RepeatedTimer mpcTimer_;
-};
+    benchmark::RepeatedTimer mpcTimer_;
+  };
 
-}  // namespace ocs2
+} // namespace ocs2
